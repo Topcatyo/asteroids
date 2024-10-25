@@ -1,6 +1,7 @@
 # this allows us to use code from
 # the open-source pygame library
 # throughout this file
+import sys
 import pygame
 from constants import *
 from player import *
@@ -22,7 +23,7 @@ def main():
 
     Player.containers = (updatable, drawable)
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
-    Shot.containers = ()
+    Shot.containers = (shots, updatable, drawable)
     
     Asteroid.containers = (asteroids, updatable, drawable)
     AsteroidField.containers = updatable
@@ -42,17 +43,25 @@ def main():
             if event.type == pygame.QUIT:
                 return
 
-
-        #screen draw bullshit
+        # screen draw bullshit
         screen.fill("black") # fill screen
-        for d in drawable: # draw
-            d.draw(screen)
         for u in updatable: # update
             u.update(dt)
-        for a in asteroids:
-            if a.collides_with(player):
+
+        # collisions
+        for asteroid in asteroids:
+            if asteroid.collides_with(player):
                 print("Game Over")
                 sys.exit()
+
+            for shot in shots:
+                if asteroid.collides_with(shot):
+                    shot.kill()
+                    asteroid.split()
+
+        for d in drawable: # draw
+            d.draw(screen)
+
         pygame.display.flip() # refresh screen
         dt = clock.tick(60) / 1000 # limit framerate to 60 FPS
 
